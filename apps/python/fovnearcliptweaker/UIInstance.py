@@ -1,0 +1,119 @@
+import ac
+from Slider import Slider
+from vec2 import vec2
+from Label import Label
+
+count = 0
+uiInstance = None
+
+class UIInstance:
+    def __init__(self):
+        width = 900
+        self.freeCamOn = False
+
+        self.fovRange = vec2(0, 100)
+        self.nearClipRange = vec2(0, 1000)
+        self.fov = None
+        self.nearClip = None
+        self.cameraMode = -1
+        self._updateIndex = -1
+
+        ac.log("ASDF will new app")
+        self.app = ac.newApp("Fov Near Clip Tweaker")
+        ac.log("ASDF will set size")
+
+        startY = 48
+
+        self.enabledButton = ac.addButton(self.app, 'Toggle Enabled')
+        ac.addOnClickedListener(self.enabledButton, onFreeCamButtonClicked)
+        ac.setSize(self.enabledButton, 200, 24)
+        ac.setPosition(self.enabledButton, 16, startY)
+        enabledButtonMaxY = 24 + startY
+
+        self.fovTitle = Label(self.app, "FOV:", vec2(16, enabledButtonMaxY + 16), vec2(width - 32, 22))
+        self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
+
+        self.nearClipTitle = Label(self.app, "Near clip:", vec2(16, self.fovSlider.maxY()), vec2(width - 32, 22))
+        self.nearClipSlider = Slider(self.app, vec2(16, self.nearClipTitle.maxY() + 16), vec2(width - 32, 24), onNearClipClick)
+
+        height = self.nearClipSlider.maxY() + 16
+
+        ac.setSize( self.app, width, height)
+
+        global uiInstance
+        uiInstance = self
+
+    def acUpdate(self, dt):
+        self._updateIndex += 1
+
+        if self._updateIndex % 30 == 0:
+            fov = ac.ext_getCameraFov()
+            if fov != self.fov:
+                self.fov = fov
+                self.syncFovTitle()
+            
+            nearClip = ac.ext_getCameraClipNear()
+            if nearClip != self.nearClip:
+                self.nearClip = nearClip
+                self.syncNearClipTitle()
+
+            cameraMode = ac.getCameraMode()
+            if cameraMode != self.cameraMode:
+                self.cameraMode = cameraMode
+                if cameraMode == 6:
+                    ac.setText(self.enabledButton, 'Disable free camera')
+                else:
+                    ac.setText(self.enabledButton, 'Enable free camera')
+    
+    def syncFovTitle(self):
+        self.fovTitle.setText('FOV: {:.2f} degrees'.format(self.fov))
+    
+    def syncNearClipTitle(self):
+        self.nearClipTitle.setText('Near Clip: {:.2f} meters'.format(self.nearClip))
+
+    def onFreeCamButtonClicked(self):
+        if self.cameraMode == 6:
+            ac.setCameraMode(0)
+        else:
+            ac.setCameraMode(6)
+
+    def handleFovClick(self, x, y):
+        uiInstance.fovSlider.handleClick(x, y)
+        range = uiInstance.fovSlider.size.x
+        if range == 0:
+            return
+
+        fill = x / range
+        if fill <= 0.75:
+            fov = self.fovRange.x + (5 - self.fovRange.x) * (fill / 0.75)
+        else:
+            fov = 5 + (self.fovRange.y - 5) * ((fill - 0.75) / 0.25)
+        
+        ac.ext_setCameraFov(fov)
+        self.fov = fov
+        self.syncFovTitle()
+
+    def handleNearClipClick(self, x, y):
+        uiInstance.nearClipSlider.handleClick(x, y)
+        range = uiInstance.nearClipSlider.size.x
+        if range == 0:
+            return
+
+        fill = x / range
+        if fill <= 0.75:
+            nearClip = self.nearClipRange.x + (50 - self.nearClipRange.x) * (fill / 0.75)
+        else:
+            nearClip = 50 + (self.nearClipRange.y - 50) * ((fill - 0.75) / 0.25)
+        
+        ac.ext_setCameraClipNear(nearClip)
+        self.nearClip = nearClip
+        self.syncNearClipTitle()
+
+def onFreeCamButtonClicked(x,y):
+    uiInstance.onFreeCamButtonClicked()
+
+def onFovClick(x,y):
+    uiInstance.handleFovClick(x, y)
+
+def onNearClipClick(x, y):
+    uiInstance.handleNearClipClick(x, y)
