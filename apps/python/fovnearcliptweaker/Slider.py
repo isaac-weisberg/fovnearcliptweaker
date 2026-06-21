@@ -23,6 +23,9 @@ class Slider:
 
         ac.addOnClickedListener(self.bg, handler)
     
+    def setFill(self, fill):
+        ac.setSize(self.fg, self.size.x * fill, self.size.y)
+
     def handleClick(self, x, y):
         ac.setSize(self.fg, x, self.size.y)
 

@@ -2,6 +2,7 @@ import ac
 from Slider import Slider
 from vec2 import vec2
 from Label import Label
+from RangeMapping import RangeMapping
 
 count = 0
 uiInstance = None
@@ -11,8 +12,8 @@ class UIInstance:
         width = 900
         self.freeCamOn = False
 
-        self.fovRange = vec2(0, 100)
-        self.nearClipRange = vec2(0, 1000)
+        self.fovRange = RangeMapping(60, 0.5, 0.25)
+        self.nearClipRange = RangeMapping(1000, 0.75, 0.1)
         self.fov = None
         self.nearClip = None
         self.cameraMode = -1
@@ -33,8 +34,8 @@ class UIInstance:
         self.fovTitle = Label(self.app, "FOV:", vec2(16, enabledButtonMaxY + 16), vec2(width - 32, 22))
         self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
 
-        self.nearClipTitle = Label(self.app, "Near clip:", vec2(16, self.fovSlider.maxY()), vec2(width - 32, 22))
-        self.nearClipSlider = Slider(self.app, vec2(16, self.nearClipTitle.maxY() + 16), vec2(width - 32, 24), onNearClipClick)
+        self.nearClipTitle = Label(self.app, "Near clip:", vec2(16, self.fovSlider.maxY() + 16), vec2(width - 32, 22))
+        self.nearClipSlider = Slider(self.app, vec2(16, self.nearClipTitle.maxY()), vec2(width - 32, 24), onNearClipClick)
 
         height = self.nearClipSlider.maxY() + 16
 
@@ -50,11 +51,13 @@ class UIInstance:
             fov = ac.ext_getCameraFov()
             if fov != self.fov:
                 self.fov = fov
+                self.fovSlider.setFill(self.fovRange.outToIn(fov))
                 self.syncFovTitle()
             
             nearClip = ac.ext_getCameraClipNear()
             if nearClip != self.nearClip:
                 self.nearClip = nearClip
+                self.nearClipSlider.setFill(self.nearClipRange.outToIn(nearClip))
                 self.syncNearClipTitle()
 
             cameraMode = ac.getCameraMode()
@@ -84,10 +87,8 @@ class UIInstance:
             return
 
         fill = x / range
-        if fill <= 0.75:
-            fov = self.fovRange.x + (5 - self.fovRange.x) * (fill / 0.75)
-        else:
-            fov = 5 + (self.fovRange.y - 5) * ((fill - 0.75) / 0.25)
+
+        fov = self.fovRange.inToOut(fill)
         
         ac.ext_setCameraFov(fov)
         self.fov = fov
@@ -100,10 +101,7 @@ class UIInstance:
             return
 
         fill = x / range
-        if fill <= 0.75:
-            nearClip = self.nearClipRange.x + (50 - self.nearClipRange.x) * (fill / 0.75)
-        else:
-            nearClip = 50 + (self.nearClipRange.y - 50) * ((fill - 0.75) / 0.25)
+        nearClip = self.nearClipRange.inToOut(fill)
         
         ac.ext_setCameraClipNear(nearClip)
         self.nearClip = nearClip
