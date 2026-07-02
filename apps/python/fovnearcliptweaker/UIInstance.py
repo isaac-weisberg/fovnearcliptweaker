@@ -10,6 +10,7 @@ from Slider import Slider
 from vec2 import vec2
 from vec3 import vec3
 from Label import Label
+from Button import Button
 from RangeMapping import RangeMapping
 
 count = 0
@@ -27,18 +28,15 @@ class UIInstance:
         self.cameraMode = -1
         self.distanceToCar = None
         self._updateIndex = -1
+        self.fovControl = None
 
         self.app = ac.newApp("Fov Near Clip Tweaker")
 
         startY = 48
 
-        self.enabledButton = ac.addButton(self.app, 'Toggle Enabled')
-        ac.addOnClickedListener(self.enabledButton, onFreeCamButtonClicked)
-        ac.setSize(self.enabledButton, 200, 24)
-        ac.setPosition(self.enabledButton, 16, startY)
-        enabledButtonMaxY = 24 + startY
+        self.freeCamEnabledButton = Button(self.app, 'Toggle Enabled', vec2(16, startY), vec2(200, 24), onFreeCamButtonClicked)
 
-        self.fovTitle = Label(self.app, "FOV:", vec2(16, enabledButtonMaxY + 16), vec2(width - 32, 22))
+        self.fovTitle = Label(self.app, "FOV:", vec2(16, self.freeCamEnabledButton.maxY() + 16), vec2(width - 32, 22))
         self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
 
         self.nearClipTitle = Label(self.app, "Near clip:", vec2(16, self.fovSlider.maxY() + 16), vec2(width - 32, 22))
@@ -73,9 +71,9 @@ class UIInstance:
             if cameraMode != self.cameraMode:
                 self.cameraMode = cameraMode
                 if cameraMode == 6:
-                    ac.setText(self.enabledButton, 'Disable free camera')
+                    ac.setText(self.freeCamEnabledButton, 'Disable free camera')
                 else:
-                    ac.setText(self.enabledButton, 'Enable free camera')
+                    ac.setText(self.freeCamEnabledButton, 'Enable free camera')
             
             distanceToCar = self.calcDistanceToCar()
             if distanceToCar != self.distanceToCar:
