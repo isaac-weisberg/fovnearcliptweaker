@@ -71,9 +71,9 @@ class UIInstance:
             if cameraMode != self.cameraMode:
                 self.cameraMode = cameraMode
                 if cameraMode == 6:
-                    ac.setText(self.freeCamEnabledButton, 'Disable free camera')
+                    self.freeCamEnabledButton.setText('Disable free camera')
                 else:
-                    ac.setText(self.freeCamEnabledButton, 'Enable free camera')
+                    self.freeCamEnabledButton.setText('Enable free camera')
             
             distanceToCar = self.calcDistanceToCar()
             if distanceToCar != self.distanceToCar:
