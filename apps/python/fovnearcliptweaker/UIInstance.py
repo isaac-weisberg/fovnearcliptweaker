@@ -12,6 +12,7 @@ from vec3 import vec3
 from Label import Label
 from Button import Button
 from RangeMapping import RangeMapping
+from NearClipControlWidget import NearClipControlWidget
 
 count = 0
 uiInstance = None
@@ -35,6 +36,7 @@ class UIInstance:
         startY = 48
 
         self.freeCamEnabledButton = Button(self.app, 'Toggle Enabled', vec2(16, startY), vec2(200, 24), onFreeCamButtonClicked)
+        self.nearClipControlWidget = NearClipControlWidget(self.app, vec2(self.freeCamEnabledButton.maxX() + 16, startY), 24)
 
         self.fovTitle = Label(self.app, "FOV:", vec2(16, self.freeCamEnabledButton.maxY() + 16), vec2(width - 32, 22))
         self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
@@ -70,10 +72,7 @@ class UIInstance:
             cameraMode = ac.getCameraMode()
             if cameraMode != self.cameraMode:
                 self.cameraMode = cameraMode
-                if cameraMode == 6:
-                    self.freeCamEnabledButton.setText('Disable free camera')
-                else:
-                    self.freeCamEnabledButton.setText('Enable free camera')
+                self.syncFreeCamEnabledButton()
             
             distanceToCar = self.calcDistanceToCar()
             if distanceToCar != self.distanceToCar:
@@ -89,11 +88,21 @@ class UIInstance:
     def syncDistanceToCarLabel(self):
         self.distanceToCarLabel.setText('Distance to car: {:.2f} meters'.format(self.distanceToCar))
 
+    def syncFreeCamEnabledButton(self):
+        if self.cameraMode == 6:
+            self.freeCamEnabledButton.setText('Disable free camera')
+        else:
+            self.freeCamEnabledButton.setText('Enable free camera')
+
     def onFreeCamButtonClicked(self):
         if self.cameraMode == 6:
+            self.cameraMode = 0
             ac.setCameraMode(0)
+            self.syncFreeCamEnabledButton()
         else:
+            self.cameraMode = 6
             ac.setCameraMode(6)
+            self.syncFreeCamEnabledButton()
 
     def handleFovClick(self, x, y):
         uiInstance.fovSlider.handleClick(x, y)

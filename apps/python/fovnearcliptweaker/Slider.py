@@ -1,4 +1,5 @@
 import ac
+from theme import accentColor, widgetBgColor
 
 class Slider:
     def __init__(self, app, pos, size, handler):
@@ -9,7 +10,7 @@ class Slider:
         ac.setPosition(self.bg, pos.x, pos.y)
         ac.setSize(self.bg, size.x, size.y)
         ac.drawBackground(self.bg, 1)
-        ac.setBackgroundColor(self.bg, 0,0,0)
+        ac.setBackgroundColor(self.bg, widgetBgColor.x, widgetBgColor.y, widgetBgColor.z)
         ac.setBackgroundOpacity(self.bg, 0.7)
         ac.drawBorder(self.bg, 0)
 
@@ -17,7 +18,7 @@ class Slider:
         ac.setPosition(self.fg, pos.x, pos.y)
         ac.setSize(self.fg, size.x / 2, size.y)
         ac.drawBackground(self.fg, 1)
-        ac.setBackgroundColor(self.fg, 1,0.2,0)
+        ac.setBackgroundColor(self.fg, accentColor.x, accentColor.y, accentColor.z)
         ac.setBackgroundOpacity(self.fg, 1)
         ac.drawBorder(self.fg, 0)
 
