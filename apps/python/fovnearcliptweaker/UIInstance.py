@@ -56,6 +56,14 @@ class UIInstance:
     def acUpdate(self, dt):
         self._updateIndex += 1
 
+        distanceToCar = None
+        nearClip = None
+        if self.nearClipControlWidget.currentValue == 1:
+            if distanceToCar == None:
+                distanceToCar = self.calcDistanceToCar()
+            nearClip = max(0.05, 0.2 * distanceToCar)
+            ac.ext_setCameraClipNear(nearClip)
+
         if self._updateIndex % 30 == 0:
             fov = ac.ext_getCameraFov()
             if fov != self.fov:
@@ -63,7 +71,8 @@ class UIInstance:
                 self.fovSlider.setFill(self.fovRange.outToIn(fov))
                 self.syncFovTitle()
             
-            nearClip = ac.ext_getCameraClipNear()
+            if nearClip == None:
+                nearClip = ac.ext_getCameraClipNear()
             if nearClip != self.nearClip:
                 self.nearClip = nearClip
                 self.nearClipSlider.setFill(self.nearClipRange.outToIn(nearClip))
@@ -74,7 +83,8 @@ class UIInstance:
                 self.cameraMode = cameraMode
                 self.syncFreeCamEnabledButton()
             
-            distanceToCar = self.calcDistanceToCar()
+            if distanceToCar == None:
+                distanceToCar = self.calcDistanceToCar()
             if distanceToCar != self.distanceToCar:
                 self.distanceToCar = distanceToCar
                 self.syncDistanceToCarLabel()
@@ -158,9 +168,7 @@ def onNearClipClick(x, y):
     uiInstance.handleNearClipClick(x, y)
 
 def onNearClipControlNoControl(x, y):
-    print('ASDF NO CONTROL')
     uiInstance.handleNearClipControlNoControl()
 
 def onNearClipControlFollowDistance(x, y):
-    print('ASDF follow distance')
     uiInstance.handleNearClipControlFollowDistance()
