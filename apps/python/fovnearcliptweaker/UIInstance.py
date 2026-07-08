@@ -11,7 +11,7 @@ from vec2 import vec2
 from vec3 import vec3
 from Label import Label
 from Button import Button
-from RangeMapping import RangeMapping
+from QuadraticRangeMapping import QuadraticRangeMapping
 from NearClipControlWidget import NearClipControlWidget
 
 count = 0
@@ -22,14 +22,14 @@ class UIInstance:
         width = 900
         self.freeCamOn = False
 
-        self.fovRange = RangeMapping(60, 0.5, 0.25)
-        self.nearClipRange = RangeMapping(1000, 0.75, 0.1)
+        self.fovRange = QuadraticRangeMapping(60, 0.5, 0.25)
+        self.nearClipRange = QuadraticRangeMapping(1000, 0.75, 0.1)
         self.fov = None
         self.nearClip = None
         self.cameraMode = -1
         self.distanceToCar = None
         self._updateIndex = -1
-        self.fovControl = None
+        self.linearNearClipK = 0.2
 
         self.app = ac.newApp("Fov Near Clip Tweaker")
 
@@ -37,6 +37,13 @@ class UIInstance:
 
         self.freeCamEnabledButton = Button(self.app, 'Toggle Enabled', vec2(16, startY), vec2(200, 24), onFreeCamButtonClicked)
         self.nearClipControlWidget = NearClipControlWidget(self.app, vec2(self.freeCamEnabledButton.maxX() + 16, startY), 24, onNearClipControlNoControl, onNearClipControlFollowDistance)
+
+        self.linearNearClipKSlider = Slider(
+            self.app, 
+            vec2(self.nearClipControlWidget.controlButtonFollowDistance.pos.x, self.nearClipControlWidget.controlButtonFollowDistance.maxY()),
+            vec2(self.nearClipControlWidget.controlButtonFollowDistance.size.x, 4),
+            onLinearNearClipKSlider
+        )
 
         self.fovTitle = Label(self.app, "FOV:", vec2(16, self.freeCamEnabledButton.maxY() + 16), vec2(width - 32, 22))
         self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
@@ -61,7 +68,7 @@ class UIInstance:
         if self.nearClipControlWidget.currentValue == 1:
             if distanceToCar == None:
                 distanceToCar = self.calcDistanceToCar()
-            nearClip = max(0.05, 0.2 * distanceToCar)
+            nearClip = max(0.05, self.linearNearClipK * distanceToCar)
             ac.ext_setCameraClipNear(nearClip)
 
         if self._updateIndex % 30 == 0:
@@ -115,8 +122,8 @@ class UIInstance:
             self.syncFreeCamEnabledButton()
 
     def handleFovClick(self, x, y):
-        uiInstance.fovSlider.handleClick(x, y)
-        range = uiInstance.fovSlider.size.x
+        self.fovSlider.handleClick(x, y)
+        range = self.fovSlider.size.x
         if range == 0:
             return
 
@@ -129,8 +136,8 @@ class UIInstance:
         self.syncFovTitle()
 
     def handleNearClipClick(self, x, y):
-        uiInstance.nearClipSlider.handleClick(x, y)
-        range = uiInstance.nearClipSlider.size.x
+        self.nearClipSlider.handleClick(x, y)
+        range = self.nearClipSlider.size.x
         if range == 0:
             return
 
@@ -157,6 +164,15 @@ class UIInstance:
 
     def handleNearClipControlFollowDistance(self):
         self.nearClipControlWidget.setValue(1)
+    
+    def handleLinearNearClipKSlider(self, x, y):
+        self.linearNearClipKSlider.handleClick(x, y)
+        range = self.linearNearClipKSlider.size.x
+        if range == 0:
+            return
+        fill = x / range
+        self.linearNearClipK = fill
+
 
 def onFreeCamButtonClicked(x,y):
     uiInstance.onFreeCamButtonClicked()
@@ -172,3 +188,6 @@ def onNearClipControlNoControl(x, y):
 
 def onNearClipControlFollowDistance(x, y):
     uiInstance.handleNearClipControlFollowDistance()
+
+def onLinearNearClipKSlider(x, y):
+    uiInstance.handleLinearNearClipKSlider(x, y)
