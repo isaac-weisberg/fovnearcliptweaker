@@ -36,7 +36,7 @@ class UIInstance:
         startY = 48
 
         self.freeCamEnabledButton = Button(self.app, 'Toggle Enabled', vec2(16, startY), vec2(200, 24), onFreeCamButtonClicked)
-        self.nearClipControlWidget = NearClipControlWidget(self.app, vec2(self.freeCamEnabledButton.maxX() + 16, startY), 24)
+        self.nearClipControlWidget = NearClipControlWidget(self.app, vec2(self.freeCamEnabledButton.maxX() + 16, startY), 24, onNearClipControlNoControl, onNearClipControlFollowDistance)
 
         self.fovTitle = Label(self.app, "FOV:", vec2(16, self.freeCamEnabledButton.maxY() + 16), vec2(width - 32, 22))
         self.fovSlider = Slider(self.app, vec2(16, self.fovTitle.maxY()), vec2(width - 32, 24), onFovClick)
@@ -141,7 +141,12 @@ class UIInstance:
         distance = cameraWorldPosition.distance(carWorldPosition)
         
         return distance
+    
+    def handleNearClipControlNoControl(self):
+        self.nearClipControlWidget.setValue(0)
 
+    def handleNearClipControlFollowDistance(self):
+        self.nearClipControlWidget.setValue(1)
 
 def onFreeCamButtonClicked(x,y):
     uiInstance.onFreeCamButtonClicked()
@@ -151,3 +156,11 @@ def onFovClick(x,y):
 
 def onNearClipClick(x, y):
     uiInstance.handleNearClipClick(x, y)
+
+def onNearClipControlNoControl(x, y):
+    print('ASDF NO CONTROL')
+    uiInstance.handleNearClipControlNoControl()
+
+def onNearClipControlFollowDistance(x, y):
+    print('ASDF follow distance')
+    uiInstance.handleNearClipControlFollowDistance()

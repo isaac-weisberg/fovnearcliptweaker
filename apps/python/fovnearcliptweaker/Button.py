@@ -12,7 +12,8 @@ class Button:
         self.pos = pos
         self.size = size
         self.text = text
-        ac.addOnClickedListener(self.button, onClick)
+        if onClick != None:
+            ac.addOnClickedListener(self.button, onClick)
         ac.setSize(self.button, size.x, size.y)
         ac.setPosition(self.button, pos.x, pos.y)
         ac.drawBackground(self.button, 1)
